@@ -1,0 +1,25 @@
+<html>
+<h1>PriceTracker</h1>
+<h3>Enter a product URL below</h3>
+URL: <input id="url" type="text" name="url" required>
+<input type="submit" value="Submit" required>
+<h3 id="price"></h3>
+<script>
+    async function submitURL() {
+        const url = document.getElementById('url').value
+        const priceDiv = document.getElementById('price')
+        const price = await fetch(
+            '/api/getPrice',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url })
+            }
+        )
+        priceDiv.innerText = price
+    }
+</script>
+
+</html>

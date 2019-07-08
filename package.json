@@ -1,0 +1,17 @@
+{
+  "name": "pricetracker",
+  "version": "1.0.0",
+  "description": "A Web App for consumers to track prices of seasonal gifts and hot products on any e-commerce platform.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Shounak Datta",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "express": "^4.17.1",
+    "path": "^0.12.7",
+    "request": "^2.88.0"
+  }
+}
