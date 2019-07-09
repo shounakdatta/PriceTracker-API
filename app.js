@@ -1,29 +1,37 @@
-const request = require('request')
 const express = require('express')
+const cheerio = require('cheerio')
+const bodyParser = require('body-parser')
 const path = require('path')
+const fs = require('fs')
 const app = express()
+const Nightmare = require('nightmare')
 const PORT = process.env.PORT | 3000
+
+const nightmare = Nightmare({ show: true })
+
+app.use(bodyParser.json());       // to support JSON-encoded bodies
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname + '/pages/form.html'))
 })
 
+app.get('/output', (req, res) => res.sendFile(path.join(__dirname + '/pages/output.html')))
+
 app.post('/api/getPrice', async (req, res) => {
     const { url } = req.body
+    console.log(url);
+
     if (url) {
-        const price = await request(
-            url,
-            (err, response, html) => {
-                if (!error && response.statusCode == 200) {
-                    const $ = cheerio.load(html)
-                    const div = $('#price')
-                    const price = div.find('span[id=priceblock_ourprice]').text()
-                    resolve(price)
-                }
-                reject(error);
-            }
-        )
+        nightmare
+            .goto(url)
+            .evaluate(() => document.body.innerHTML)
+            .then(body => {
+                const $ = cheerio.load(body)
+                const div = $('span[data-automation="buybox-price"]')
+                fs.writeFile('pages/output.html', div.text(), (err) => console.log(err))
+            })
     }
+    res.send({ test: 'price' })
 })
 
 app.listen(PORT, () => console.log(`Listening on Port ${PORT}`))
