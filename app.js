@@ -19,19 +19,32 @@ app.get('/output', (req, res) => res.sendFile(path.join(__dirname + '/pages/outp
 
 app.post('/api/getPrice', async (req, res) => {
     const { url } = req.body
-    console.log(url);
 
     if (url) {
-        nightmare
-            .goto(url)
-            .evaluate(() => document.body.innerHTML)
-            .then(body => {
-                const $ = cheerio.load(body)
-                const div = $('span[data-automation="buybox-price"]')
-                fs.writeFile('pages/output.html', div.text(), (err) => console.log(err))
-            })
+        const price = await new Promise(
+            (resolve, reject) => {
+                nightmare
+                    .goto(url)
+                    .evaluate(() => document.body.innerHTML)
+                    .end()
+                    .then(body => {
+                        const $ = cheerio.load(body)
+                        const div = $('span[data-automation="buybox-price"]')
+                        if (
+                            div.text()
+                            && (
+                                div.text().charAt(0) === '$'
+                                || !isNaN(parseFloat(div.text()))
+                            )
+                        ) resolve(div.text())
+                        reject('Could not find price.')
+                    })
+            }
+        )
+        res.send({ price })
+        return
     }
-    res.send({ test: 'price' })
+    res.send({ error: 'Could not identify URL in post data' })
 })
 
 app.listen(PORT, () => console.log(`Listening on Port ${PORT}`))
