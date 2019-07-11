@@ -6,8 +6,16 @@ const fs = require('fs')
 const app = express()
 const Nightmare = require('nightmare')
 const PORT = process.env.PORT | 3000
+const constants = require('./constants')
 
-const nightmare = Nightmare({ show: true })
+const getWebElement = url => {
+    const { commonWebElements } = constants
+    let element = null
+    Object.keys(commonWebElements).forEach((domain) => {
+        if (url.includes(domain)) element = commonWebElements[domain]
+    });
+    return element
+}
 
 app.use(bodyParser.json());       // to support JSON-encoded bodies
 
@@ -21,27 +29,30 @@ app.post('/api/getPrice', async (req, res) => {
     const { url } = req.body
 
     if (url) {
-        const price = await new Promise(
+        const priceObj = await new Promise(
             (resolve, reject) => {
+                const nightmare = Nightmare({ show: true })
                 nightmare
                     .goto(url)
                     .evaluate(() => document.body.innerHTML)
                     .end()
                     .then(body => {
                         const $ = cheerio.load(body)
-                        const div = $('span[data-automation="buybox-price"]')
+                        const element = getWebElement(url)
+                        if (!element) { reject({ err: 'Could not find price' }); return }
+                        const div = $(element)
                         if (
                             div.text()
                             && (
                                 div.text().charAt(0) === '$'
-                                || !isNaN(parseFloat(div.text()))
+                                || !isNaN(parseFloat(div.text().match(/\d|\.|\-/g).join('')))
                             )
-                        ) resolve(div.text())
-                        reject('Could not find price.')
+                        ) { resolve({ price: parseFloat(div.text().match(/\d|\.|\-/g).join('')) }); return }
+                        reject({ err: 'Could not find price' })
                     })
             }
-        )
-        res.send({ price })
+        ).catch(errObj => errObj)
+        res.send(priceObj)
         return
     }
     res.send({ error: 'Could not identify URL in post data' })

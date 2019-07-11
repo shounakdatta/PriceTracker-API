@@ -2,13 +2,14 @@
 <h1>PriceTracker</h1>
 <h3>Enter a product URL below</h3>
 URL: <input id="url" type="text" name="url" required>
-<input type="submit" value="Submit" required>
+<button onclick="submitURL()" type="submit">Submit</button>
+<h3 id="priceTitle">Price: </h3>
 <h3 id="price"></h3>
 <script>
     async function submitURL() {
         const url = document.getElementById('url').value
         const priceDiv = document.getElementById('price')
-        const price = await fetch(
+        const priceObj = await fetch(
             '/api/getPrice',
             {
                 method: 'POST',
@@ -17,8 +18,10 @@ URL: <input id="url" type="text" name="url" required>
                 },
                 body: JSON.stringify({ url })
             }
-        )
-        priceDiv.innerText = price
+        ).then(res => res.json())
+        const { price, err } = priceObj
+        if (price) priceDiv.innerText = '$' + price
+        else priceDiv.innerText = err
     }
 </script>
 
