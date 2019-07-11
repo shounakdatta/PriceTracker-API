@@ -1,7 +1,7 @@
-#PriceTracker
+# PriceTracker
 Welcome to PriceTracker. An universal price tracking backend platform for consumers. We know the name sucks. Don't worry, we will change it later ;).
 
-##Getting started
+## Getting started
 1. Fork this repo.
 2. `cd PriceTracker`
 3. `yarn` or `npm i`
