@@ -31,7 +31,7 @@ app.post('/api/getPrice', async (req, res) => {
     if (url) {
         const priceObj = await new Promise(
             (resolve, reject) => {
-                const nightmare = Nightmare({ show: true })
+                const nightmare = Nightmare({ show: false })
                 nightmare
                     .goto(url)
                     .evaluate(() => document.body.innerHTML)
@@ -47,7 +47,7 @@ app.post('/api/getPrice', async (req, res) => {
                                 div.text().charAt(0) === '$'
                                 || !isNaN(parseFloat(div.text().match(/\d|\.|\-/g).join('')))
                             )
-                        ) { resolve({ price: parseFloat(div.text().match(/\d|\.|\-/g).join('')) }); return }
+                        ) { resolve({ price: parseFloat(div.text().match(/\d|\.|\-/g).join('')).toFixed(2) }); return }
                         reject({ err: 'Could not find price' })
                     })
             }
